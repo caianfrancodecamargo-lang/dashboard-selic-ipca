@@ -45,7 +45,13 @@ ipca_df = ipca_df.sort_values("data")
 ipca_df["ipca_12m"] = ipca_df["valor"].rolling(12).sum()
 
 # Interpolação IPCA para datas da Selic
-ipca_interp = ipca_df.set_index("data")["ipca_12m"].reindex(selic_df["data"]).interpolate(method='time').round(2).reset_index()
+ipca_interp = (
+    ipca_df.set_index("data")["ipca_12m"]
+    .reindex(selic_df["data"])
+    .interpolate(method='time')
+    .round(2)
+    .reset_index()
+)
 ipca_interp.rename(columns={"index": "data"}, inplace=True)
 
 # Juntar bases por data
@@ -56,40 +62,54 @@ df["juros_reais"] = df["selic"] - df["ipca_12m"]
 
 # Últimos valores
 last_date = df["data"].max()
+last_row = df.loc[df["data"] == last_date].iloc[0]
 
 # Gráfico
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
     x=df["data"], y=df["selic"].round(2),
-    mode="lines", name="Selic (a.a.)", line=dict(color="#0E4D3A")  # verde escuro Copaíba
+    mode="lines", name="Selic (a.a.)", line=dict(color="blue")
 ))
 fig.add_trace(go.Scatter(
     x=df["data"], y=df["ipca_12m"],
-    mode="lines", name="IPCA 12m", line=dict(color="#6A8E3E")  # verde médio
+    mode="lines", name="IPCA 12m", line=dict(color="red")
 ))
 fig.add_trace(go.Scatter(
     x=df["data"], y=df["juros_reais"],
-    mode="lines", name="Juros Reais", line=dict(color="#9FBF67")  # verde claro
+    mode="lines", name="Juros Reais", line=dict(color="green")
 ))
 
-fig.add_hline(y=0, line_dash="dot", line_color="gray")
+fig.add_hline(y=0, line_dash="dot", line_color="black")
 
+# Título centralizado
 fig.update_layout(
     title=dict(
         text="<b>Selic x IPCA x Juros Reais</b>",
         x=0.5,  # centraliza
-        xanchor='center',
-        yanchor='top',
-        font=dict(size=22, color='#0E4D3A')  # verde escuro e negrito
+        xanchor="center",
+        yanchor="top",
+        font=dict(size=22)
     ),
     xaxis_title="Data",
     yaxis_title="Taxa (%)",
     hovermode="x unified",
-    template="plotly_white",
-    showlegend=True,
+    template="plotly_white"
+)
+
+# Marca d'água centralizada e semi-transparente
+fig.add_layout_image(
+    dict(
+        source="Logo invest + XP preto.png",  # nome do arquivo da logo
+        xref="paper", yref="paper",
+        x=0.5, y=0.5,  # centro do gráfico
+        sizex=0.9, sizey=0.9,  # tamanho relativo
+        xanchor="center", yanchor="middle",
+        opacity=0.15,  # transparência
+        layer="below"  # atrás das linhas
+    )
 )
 
 # Mostrar no Streamlit
 st.plotly_chart(fig, use_container_width=True)
-st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')}")
+st.caption(f"Atualizado em: {last_date.strftime('%d/%m/%Y')}")
