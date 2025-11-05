@@ -76,14 +76,13 @@ df = selic_df.rename(columns={"valor": "selic"}).merge(ipca_interp, on="data")
 df["juros_reais"] = df["selic"] - df["ipca_12m"]
 
 last_date = df["data"].max()
-last_row = df.loc[df["data"] == last_date].iloc[0]
 
 # ==========
 # Gráfico
 # ==========
 fig = go.Figure()
 
-# Marca d’água (maior e semi-transparente)
+# Marca d’água grande e semi-transparente
 with open("Logo invest + XP preto.png", "rb") as f:
     image_bytes = f.read()
     encoded_image = base64.b64encode(image_bytes).decode()
@@ -93,9 +92,9 @@ fig.add_layout_image(
         source="data:image/png;base64," + encoded_image,
         xref="paper", yref="paper",
         x=0.5, y=0.5,
-        sizex=2.2, sizey=2.2,  # << AUMENTADO
+        sizex=2.3, sizey=2.3,   # << bem maior
         xanchor="center", yanchor="middle",
-        opacity=0.12,  # << mais suave
+        opacity=0.12,           # << suave
         layer="below"
     )
 )
@@ -111,23 +110,27 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
 # ==========
-# Layout (título central dentro do gráfico)
+# Layout (título fora do gráfico, centralizado)
 # ==========
-fig.add_annotation(
-    text="<b>Selic x IPCA x Juros Reais</b>",
-    xref="paper", yref="paper",
-    x=0.5, y=0.93,  # posição mais interna no gráfico
-    showarrow=False,
-    font=dict(size=24, color="black"),
-)
-
 fig.update_layout(
+    title=dict(
+        text="<b>Selic x IPCA x Juros Reais</b>",
+        x=0.5,
+        y=0.98,                   # << título no topo
+        font=dict(size=26, color="black"),
+        xanchor="center",
+        yanchor="top"
+    ),
     xaxis_title="Data",
     yaxis_title="Taxa (%)",
     hovermode="x unified",
     template="plotly_white",
-    legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center", yanchor="top"),
-    margin=dict(t=50, b=50, l=50, r=50),
+    legend=dict(
+        orientation="h",
+        y=-0.2, x=0.5,
+        xanchor="center", yanchor="top"
+    ),
+    margin=dict(t=120, b=50, l=50, r=50),  # << mais espaço acima pro título
 )
 
 # ==========
