@@ -117,7 +117,7 @@ fig.update_layout(
         text="<b>Selic x IPCA x Juros Reais</b>",
         x=0.5,
         y=0.98,                   # << título no topo
-        font=dict(size=26, color="black"),
+        font=dict(size=26, color="#0B3D2E"),
         xanchor="center",
         yanchor="top"
     ),
