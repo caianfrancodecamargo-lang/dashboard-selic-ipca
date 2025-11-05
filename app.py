@@ -134,4 +134,4 @@ fig.update_layout(
 # Exibição no Streamlit
 # ==========
 st.plotly_chart(fig, use_container_width=True)
-st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')_
+st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')}")
