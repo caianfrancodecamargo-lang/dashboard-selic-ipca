@@ -120,13 +120,30 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
 # Linha vertical da pandemia
-fig.add_vline(
-    x=datetime(2020, 3, 11),
-    line_dash="dash",
-    line_color="red",
-    opacity=0.8,
-    annotation_text="Pandemia - Covid-19",
-    annotation_position="top left",
-    annotation_font_size=12,
-    annotation_font_color="red"
+pandemia_data = datetime(2020, 3, 11)
+
+# Linha pontilhada vertical
+fig.add_shape(
+    type="line",
+    x0=pandemia_data,
+    x1=pandemia_data,
+    y0=0,
+    y1=1,
+    xref="x",
+    yref="paper",
+    line=dict(color="red", width=2, dash="dash")
+)
+
+# Texto de anotação
+fig.add_annotation(
+    x=pandemia_data,
+    y=1,
+    xref="x",
+    yref="paper",
+    text="Pandemia - Covid-19",
+    showarrow=False,
+    font=dict(color="red", size=12),
+    xanchor="left",
+    yanchor="bottom",
+    bgcolor="rgba(255,255,255,0.6)"
 )
