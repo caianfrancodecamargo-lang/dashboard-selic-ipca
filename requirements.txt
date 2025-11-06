@@ -2,3 +2,4 @@ pandas
 requests
 plotly
 streamlit
+beautifulsoup4
