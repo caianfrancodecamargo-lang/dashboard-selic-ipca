@@ -27,38 +27,27 @@ def get_bcb_data(codigo_serie, start, end):
 # ======================
 # Cores
 # ======================
-COLOR_SELIC = "#0B3D2E"
-COLOR_IPCA = "#6B8E23"
-COLOR_JUROS = "#4FA3A3"
-COLOR_ZERO = "#333333"
+COLOR_SELIC = "#0B3D2E"      # Verde escuro Copaíba
+COLOR_IPCA = "#6B8E23"       # Verde oliva
+COLOR_JUROS = "#4FA3A3"      # Verde claro
+COLOR_ZERO = "#333333"       # Cinza escuro
 
 # ======================
-# Sidebar - Filtros de data
-# ======================
-st.sidebar.header("📅 Período de Análise")
-min_date = datetime(2015, 1, 1)
-max_date = datetime.today()
-
-# Seletores de data no topo direito
-col1, col2, col3 = st.columns([1, 1, 5])
-with col3:
-    start_date = st.date_input("Data inicial", value=min_date, min_value=min_date, max_value=max_date)
-    end_date = st.date_input("Data final", value=max_date, min_value=min_date, max_value=max_date)
-
-if start_date > end_date:
-    st.warning("⚠️ A data inicial não pode ser maior que a final.")
-    st.stop()
-
-# ======================
-# Séries
+# Séries e períodos
 # ======================
 selic_codigo = 432
 ipca_codigo = 433
 
+periodos = [
+    ("01/01/2015", "31/12/2019"),
+    ("01/01/2020", datetime.today().strftime("%d/%m/%Y")),
+]
+
 # ======================
 # Dados Selic
 # ======================
-selic_df = get_bcb_data(selic_codigo, start_date.strftime("%d/%m/%Y"), end_date.strftime("%d/%m/%Y"))
+selic_dfs = [get_bcb_data(selic_codigo, ini, fim) for ini, fim in periodos]
+selic_df = pd.concat(selic_dfs, ignore_index=True)
 selic_df["data"] = pd.to_datetime(selic_df["data"], dayfirst=True)
 selic_df["valor"] = selic_df["valor"].astype(float)
 selic_df = selic_df.sort_values("data")
@@ -66,16 +55,21 @@ selic_df = selic_df.sort_values("data")
 # ======================
 # Dados IPCA (cálculo composto)
 # ======================
-ipca_df = get_bcb_data(ipca_codigo, (start_date.replace(year=start_date.year - 1)).strftime("%d/%m/%Y"), end_date.strftime("%d/%m/%Y"))
+ipca_dfs = [get_bcb_data(ipca_codigo, ini, fim) for ini, fim in periodos]
+ipca_df = pd.concat(ipca_dfs, ignore_index=True)
 ipca_df["data"] = pd.to_datetime(ipca_df["data"], dayfirst=True)
 ipca_df["valor"] = ipca_df["valor"].astype(float)
 ipca_df = ipca_df.sort_values("data")
 
+# Converter em fator (ex: 0,45% → 1.0045)
 ipca_df["fator"] = 1 + (ipca_df["valor"] / 100)
+
+# Calcular IPCA acumulado de 12 meses via composição de taxas
 ipca_df["ipca_12m"] = (
     ipca_df["fator"].rolling(12).apply(lambda x: x.prod(), raw=True) - 1
-) * 100
+) * 100  # Volta a ser percentual
 
+# Interpolar IPCA nas datas da Selic
 ipca_interp = (
     ipca_df.set_index("data")["ipca_12m"]
     .reindex(selic_df["data"])
@@ -93,19 +87,11 @@ df["juros_reais"] = df["selic"] - df["ipca_12m"]
 last_date = df["data"].max()
 
 # ======================
-# Últimos valores
-# ======================
-last_row = df[df["data"] == last_date].iloc[0]
-last_selic = round(last_row["selic"], 2)
-last_ipca = round(last_row["ipca_12m"], 2)
-last_juros = round(last_row["juros_reais"], 2)
-
-# ======================
 # Gráfico
 # ======================
 fig = go.Figure()
 
-# Marca d’água
+# Marca d’água grande e suave
 with open("Logo invest + XP preto.png", "rb") as f:
     image_bytes = f.read()
     encoded_image = base64.b64encode(image_bytes).decode()
@@ -132,46 +118,25 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
-# ======================
-# Anotações fixas (sem borda)
-# ======================
-fig.add_annotation(
-    x=last_date, y=last_selic,
-    text=f"Selic: {last_selic:.2f}%",
-    showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor="rgba(0,0,0,0)",
-    font=dict(color=COLOR_SELIC)
-)
-fig.add_annotation(
-    x=last_date, y=last_ipca,
-    text=f"IPCA 12m: {last_ipca:.2f}%",
-    showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor="rgba(0,0,0,0)",
-    font=dict(color=COLOR_IPCA)
-)
-fig.add_annotation(
-    x=last_date, y=last_juros,
-    text=f"Juros Reais: {last_juros:.2f}%",
-    showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor="rgba(0,0,0,0)",
-    font=dict(color=COLOR_JUROS)
-)
-
-# ======================
 # Layout
-# ======================
 fig.update_layout(
     title=dict(
         text="<b>Selic x IPCA x Juros Reais</b>",
-        x=0.5, y=0.98,
+        x=0.5,
+        y=0.98,
         font=dict(size=26, color="#0B3D2E"),
-        xanchor="center", yanchor="top"
+        xanchor="center",
+        yanchor="top"
     ),
     xaxis_title="Data",
     yaxis_title="Taxa (%)",
     hovermode="x unified",
     template="plotly_white",
-    legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center", yanchor="top"),
+    legend=dict(
+        orientation="h",
+        y=-0.2, x=0.5,
+        xanchor="center", yanchor="top"
+    ),
     margin=dict(t=120, b=50, l=50, r=50),
 )
 
