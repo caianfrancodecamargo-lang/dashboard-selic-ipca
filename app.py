@@ -57,7 +57,14 @@ ipca_df = pd.concat(ipca_dfs, ignore_index=True)
 ipca_df["data"] = pd.to_datetime(ipca_df["data"], dayfirst=True)
 ipca_df["valor"] = ipca_df["valor"].astype(float)
 ipca_df = ipca_df.sort_values("data")
-ipca_df["ipca_12m"] = ipca_df["valor"].rolling(12).sum()
+
+# Converter de percentual para fator (ex: 0,45% -> 1.0045)
+ipca_df["fator"] = 1 + (ipca_df["valor"] / 100)
+
+# Calcular o acumulado de 12 meses via produto dos fatores
+ipca_df["ipca_12m"] = (
+    ipca_df["fator"].rolling(12).apply(lambda x: x.prod(), raw=True) - 1
+) * 100  # Volta para percentual
 
 # Interpolar IPCA
 ipca_interp = (
