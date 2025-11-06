@@ -116,34 +116,32 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["ipca_12m"], mode="lines", name="IPC
 fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="Juros Reais",
                          line=dict(color=COLOR_JUROS, width=2.5)))
 
-# Linha horizontal no zero
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
-# Linha vertical da pandemia
-pandemia_data = datetime(2020, 3, 11)
-
-# Linha pontilhada vertical
-fig.add_shape(
-    type="line",
-    x0=pandemia_data,
-    x1=pandemia_data,
-    y0=0,
-    y1=1,
-    xref="x",
-    yref="paper",
-    line=dict(color="red", width=2, dash="dash")
+# Layout
+fig.update_layout(
+    title=dict(
+        text="<b>Selic x IPCA x Juros Reais</b>",
+        x=0.5,
+        y=0.98,
+        font=dict(size=26, color="#0B3D2E"),
+        xanchor="center",
+        yanchor="top"
+    ),
+    xaxis_title="Data",
+    yaxis_title="Taxa (%)",
+    hovermode="x unified",
+    template="plotly_white",
+    legend=dict(
+        orientation="h",
+        y=-0.2, x=0.5,
+        xanchor="center", yanchor="top"
+    ),
+    margin=dict(t=120, b=50, l=50, r=50),
 )
 
-# Texto de anotação
-fig.add_annotation(
-    x=pandemia_data,
-    y=1,
-    xref="x",
-    yref="paper",
-    text="Pandemia - Covid-19",
-    showarrow=False,
-    font=dict(color="red", size=12),
-    xanchor="left",
-    yanchor="bottom",
-    bgcolor="rgba(255,255,255,0.6)"
-)
+# ======================
+# Exibição no Streamlit
+# ======================
+st.plotly_chart(fig, use_container_width=True)
+st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')}")
