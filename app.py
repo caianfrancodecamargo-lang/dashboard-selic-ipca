@@ -107,7 +107,7 @@ fig.add_layout_image(
         x=0.5, y=0.5,
         sizex=2.3, sizey=2.3,
         xanchor="center", yanchor="middle",
-        opacity=0.12,
+        opacity=0.08,
         layer="below"
     )
 )
