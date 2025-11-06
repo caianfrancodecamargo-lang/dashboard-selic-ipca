@@ -116,32 +116,17 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["ipca_12m"], mode="lines", name="IPC
 fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="Juros Reais",
                          line=dict(color=COLOR_JUROS, width=2.5)))
 
+# Linha horizontal no zero
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
-# Layout
-fig.update_layout(
-    title=dict(
-        text="<b>Selic x IPCA x Juros Reais</b>",
-        x=0.5,
-        y=0.98,
-        font=dict(size=26, color="#0B3D2E"),
-        xanchor="center",
-        yanchor="top"
-    ),
-    xaxis_title="Data",
-    yaxis_title="Taxa (%)",
-    hovermode="x unified",
-    template="plotly_white",
-    legend=dict(
-        orientation="h",
-        y=-0.2, x=0.5,
-        xanchor="center", yanchor="top"
-    ),
-    margin=dict(t=120, b=50, l=50, r=50),
+# Linha vertical da pandemia
+fig.add_vline(
+    x=datetime(2020, 3, 11),
+    line_dash="dash",
+    line_color="red",
+    opacity=0.8,
+    annotation_text="Pandemia - Covid-19",
+    annotation_position="top left",
+    annotation_font_size=12,
+    annotation_font_color="red"
 )
-
-# ======================
-# Exibição no Streamlit
-# ======================
-st.plotly_chart(fig, use_container_width=True)
-st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')}")
