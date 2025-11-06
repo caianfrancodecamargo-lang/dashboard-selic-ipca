@@ -124,35 +124,43 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
 # ======================
-# Anotações fixas no canto superior direito
+# Anotações fixas no canto superior direito (corrigido)
 # ======================
 fig.add_annotation(
     text=f"<b>Selic:</b> {last_selic:.2f}%",
     xref="paper", yref="paper",
-    x=1.02, y=1.0,
+    x=1.02, y=1.0,  # linha superior
     showarrow=False,
     font=dict(color=COLOR_SELIC, size=14),
-    align="left"
+    align="left",
+    xanchor="left",
+    yanchor="top"
 )
+
 fig.add_annotation(
     text=f"<b>IPCA 12m:</b> {last_ipca:.2f}%",
     xref="paper", yref="paper",
-    x=1.02, y=0.95,
+    x=1.02, y=0.94,  # um pouco abaixo
     showarrow=False,
     font=dict(color=COLOR_IPCA, size=14),
-    align="left"
+    align="left",
+    xanchor="left",
+    yanchor="top"
 )
+
 fig.add_annotation(
     text=f"<b>Juros Reais:</b> {last_juros:.2f}%",
     xref="paper", yref="paper",
-    x=1.02, y=0.90,
+    x=1.02, y=0.88,  # ainda mais abaixo
     showarrow=False,
     font=dict(color=COLOR_JUROS, size=14),
-    align="left"
+    align="left",
+    xanchor="left",
+    yanchor="top"
 )
 
 # ======================
-# Layout
+# Layout com margem ajustada
 # ======================
 fig.update_layout(
     title=dict(
@@ -172,7 +180,7 @@ fig.update_layout(
         y=-0.2, x=0.5,
         xanchor="center", yanchor="top"
     ),
-    margin=dict(t=120, b=50, l=50, r=120),  # margem direita maior p/ anotações
+    margin=dict(t=120, b=50, l=50, r=150),  # espaço maior à direita
 )
 
 # ======================
