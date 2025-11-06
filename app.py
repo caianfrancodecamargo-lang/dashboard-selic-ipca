@@ -111,7 +111,7 @@ fig.add_layout_image(
 # Linhas principais
 fig.add_trace(go.Scatter(x=df["data"], y=df["selic"], mode="lines", name="Selic (a.a.)",
                          line=dict(color=COLOR_SELIC, width=2.5)))
-fig.add_trace(go.Scatter(x=df["data"], y=df["ipca_12m"], mode="lines", name="IPCA 12m (composto)",
+fig.add_trace(go.Scatter(x=df["data"], y=df["ipca_12m"], mode="lines", name="IPCA 12m",
                          line=dict(color=COLOR_IPCA, width=2.5)))
 fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="Juros Reais",
                          line=dict(color=COLOR_JUROS, width=2.5)))
