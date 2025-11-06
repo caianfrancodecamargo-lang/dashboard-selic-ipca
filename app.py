@@ -29,7 +29,7 @@ def get_bcb_data(codigo_serie, start, end):
 # ======================
 COLOR_SELIC = "#0B3D2E"      # Verde escuro Copaíba
 COLOR_IPCA = "#6B8E23"       # Verde oliva
-COLOR_JUROS = "#D1B954"      # Verde claro
+COLOR_JUROS = "#4FA3A3"      # Verde claro
 COLOR_ZERO = "#333333"       # Cinza escuro
 
 # ======================
