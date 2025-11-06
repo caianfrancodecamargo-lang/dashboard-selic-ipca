@@ -86,6 +86,11 @@ df = selic_df.rename(columns={"valor": "selic"}).merge(ipca_interp, on="data")
 df["juros_reais"] = df["selic"] - df["ipca_12m"]
 last_date = df["data"].max()
 
+# Últimos valores
+last_selic = df.loc[df["data"] == last_date, "selic"].iloc[0]
+last_ipca = df.loc[df["data"] == last_date, "ipca_12m"].iloc[0]
+last_juros = df.loc[df["data"] == last_date, "juros_reais"].iloc[0]
+
 # ======================
 # Gráfico
 # ======================
@@ -103,7 +108,7 @@ fig.add_layout_image(
         x=0.5, y=0.5,
         sizex=2.3, sizey=2.3,
         xanchor="center", yanchor="middle",
-        opacity=0.08,
+        opacity=0.12,
         layer="below"
     )
 )
@@ -118,7 +123,37 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
+# ======================
+# Anotações fixas no canto superior direito
+# ======================
+fig.add_annotation(
+    text=f"<b>Selic:</b> {last_selic:.2f}%",
+    xref="paper", yref="paper",
+    x=1.02, y=1.0,
+    showarrow=False,
+    font=dict(color=COLOR_SELIC, size=14),
+    align="left"
+)
+fig.add_annotation(
+    text=f"<b>IPCA 12m:</b> {last_ipca:.2f}%",
+    xref="paper", yref="paper",
+    x=1.02, y=0.95,
+    showarrow=False,
+    font=dict(color=COLOR_IPCA, size=14),
+    align="left"
+)
+fig.add_annotation(
+    text=f"<b>Juros Reais:</b> {last_juros:.2f}%",
+    xref="paper", yref="paper",
+    x=1.02, y=0.90,
+    showarrow=False,
+    font=dict(color=COLOR_JUROS, size=14),
+    align="left"
+)
+
+# ======================
 # Layout
+# ======================
 fig.update_layout(
     title=dict(
         text="<b>Selic x IPCA x Juros Reais</b>",
@@ -137,7 +172,7 @@ fig.update_layout(
         y=-0.2, x=0.5,
         xanchor="center", yanchor="top"
     ),
-    margin=dict(t=120, b=50, l=50, r=50),
+    margin=dict(t=120, b=50, l=50, r=120),  # margem direita maior p/ anotações
 )
 
 # ======================
