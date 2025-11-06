@@ -123,25 +123,31 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
 # ======================
-# Anotações fixas (últimos valores)
+# Anotações fixas (últimos valores, sem bordas)
 # ======================
 fig.add_annotation(
     x=last_date, y=last_selic,
     text=f"Selic: {last_selic:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor=COLOR_SELIC, font=dict(color=COLOR_SELIC)
+    bgcolor="white",
+    bordercolor="rgba(0,0,0,0)",  # sem borda
+    font=dict(color=COLOR_SELIC)
 )
 fig.add_annotation(
     x=last_date, y=last_ipca,
     text=f"IPCA 12m: {last_ipca:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor=COLOR_IPCA, font=dict(color=COLOR_IPCA)
+    bgcolor="white",
+    bordercolor="rgba(0,0,0,0)",
+    font=dict(color=COLOR_IPCA)
 )
 fig.add_annotation(
     x=last_date, y=last_juros,
     text=f"Juros Reais: {last_juros:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white", bordercolor=COLOR_JUROS, font=dict(color=COLOR_JUROS)
+    bgcolor="white",
+    bordercolor="rgba(0,0,0,0)",
+    font=dict(color=COLOR_JUROS)
 )
 
 # ======================
