@@ -27,10 +27,10 @@ def get_bcb_data(codigo_serie, start, end):
 # ======================
 # Cores
 # ======================
-COLOR_SELIC = "#0B3D2E"      # Verde escuro Copaíba
-COLOR_IPCA = "#6B8E23"       # Verde oliva
-COLOR_JUROS = "#4FA3A3"      # Verde claro
-COLOR_ZERO = "#333333"       # Cinza escuro
+COLOR_SELIC = "#0B3D2E"
+COLOR_IPCA = "#6B8E23"
+COLOR_JUROS = "#4FA3A3"
+COLOR_ZERO = "#333333"
 
 # ======================
 # Séries e períodos
@@ -61,15 +61,11 @@ ipca_df["data"] = pd.to_datetime(ipca_df["data"], dayfirst=True)
 ipca_df["valor"] = ipca_df["valor"].astype(float)
 ipca_df = ipca_df.sort_values("data")
 
-# Converter em fator (ex: 0,45% → 1.0045)
 ipca_df["fator"] = 1 + (ipca_df["valor"] / 100)
-
-# Calcular IPCA acumulado de 12 meses via composição de taxas
 ipca_df["ipca_12m"] = (
     ipca_df["fator"].rolling(12).apply(lambda x: x.prod(), raw=True) - 1
-) * 100  # Volta a ser percentual
+) * 100
 
-# Interpolar IPCA nas datas da Selic
 ipca_interp = (
     ipca_df.set_index("data")["ipca_12m"]
     .reindex(selic_df["data"])
@@ -87,11 +83,19 @@ df["juros_reais"] = df["selic"] - df["ipca_12m"]
 last_date = df["data"].max()
 
 # ======================
+# Últimos valores
+# ======================
+last_row = df[df["data"] == last_date].iloc[0]
+last_selic = round(last_row["selic"], 2)
+last_ipca = round(last_row["ipca_12m"], 2)
+last_juros = round(last_row["juros_reais"], 2)
+
+# ======================
 # Gráfico
 # ======================
 fig = go.Figure()
 
-# Marca d’água grande e suave
+# Marca d’água
 with open("Logo invest + XP preto.png", "rb") as f:
     image_bytes = f.read()
     encoded_image = base64.b64encode(image_bytes).decode()
@@ -118,25 +122,43 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
+# ======================
+# Anotações fixas (últimos valores)
+# ======================
+fig.add_annotation(
+    x=last_date, y=last_selic,
+    text=f"Selic: {last_selic:.2f}%",
+    showarrow=True, arrowhead=1, ax=40, ay=-30,
+    bgcolor="white", bordercolor=COLOR_SELIC, font=dict(color=COLOR_SELIC)
+)
+fig.add_annotation(
+    x=last_date, y=last_ipca,
+    text=f"IPCA 12m: {last_ipca:.2f}%",
+    showarrow=True, arrowhead=1, ax=40, ay=-30,
+    bgcolor="white", bordercolor=COLOR_IPCA, font=dict(color=COLOR_IPCA)
+)
+fig.add_annotation(
+    x=last_date, y=last_juros,
+    text=f"Juros Reais: {last_juros:.2f}%",
+    showarrow=True, arrowhead=1, ax=40, ay=-30,
+    bgcolor="white", bordercolor=COLOR_JUROS, font=dict(color=COLOR_JUROS)
+)
+
+# ======================
 # Layout
+# ======================
 fig.update_layout(
     title=dict(
         text="<b>Selic x IPCA x Juros Reais</b>",
-        x=0.5,
-        y=0.98,
+        x=0.5, y=0.98,
         font=dict(size=26, color="#0B3D2E"),
-        xanchor="center",
-        yanchor="top"
+        xanchor="center", yanchor="top"
     ),
     xaxis_title="Data",
     yaxis_title="Taxa (%)",
     hovermode="x unified",
     template="plotly_white",
-    legend=dict(
-        orientation="h",
-        y=-0.2, x=0.5,
-        xanchor="center", yanchor="top"
-    ),
+    legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center", yanchor="top"),
     margin=dict(t=120, b=50, l=50, r=50),
 )
 
