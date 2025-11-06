@@ -33,21 +33,32 @@ COLOR_JUROS = "#4FA3A3"
 COLOR_ZERO = "#333333"
 
 # ======================
-# Séries e períodos
+# Sidebar - Filtros de data
+# ======================
+st.sidebar.header("📅 Período de Análise")
+min_date = datetime(2015, 1, 1)
+max_date = datetime.today()
+
+# Seletores de data no topo direito
+col1, col2, col3 = st.columns([1, 1, 5])
+with col3:
+    start_date = st.date_input("Data inicial", value=min_date, min_value=min_date, max_value=max_date)
+    end_date = st.date_input("Data final", value=max_date, min_value=min_date, max_value=max_date)
+
+if start_date > end_date:
+    st.warning("⚠️ A data inicial não pode ser maior que a final.")
+    st.stop()
+
+# ======================
+# Séries
 # ======================
 selic_codigo = 432
 ipca_codigo = 433
 
-periodos = [
-    ("01/01/2015", "31/12/2019"),
-    ("01/01/2020", datetime.today().strftime("%d/%m/%Y")),
-]
-
 # ======================
 # Dados Selic
 # ======================
-selic_dfs = [get_bcb_data(selic_codigo, ini, fim) for ini, fim in periodos]
-selic_df = pd.concat(selic_dfs, ignore_index=True)
+selic_df = get_bcb_data(selic_codigo, start_date.strftime("%d/%m/%Y"), end_date.strftime("%d/%m/%Y"))
 selic_df["data"] = pd.to_datetime(selic_df["data"], dayfirst=True)
 selic_df["valor"] = selic_df["valor"].astype(float)
 selic_df = selic_df.sort_values("data")
@@ -55,8 +66,7 @@ selic_df = selic_df.sort_values("data")
 # ======================
 # Dados IPCA (cálculo composto)
 # ======================
-ipca_dfs = [get_bcb_data(ipca_codigo, ini, fim) for ini, fim in periodos]
-ipca_df = pd.concat(ipca_dfs, ignore_index=True)
+ipca_df = get_bcb_data(ipca_codigo, (start_date.replace(year=start_date.year - 1)).strftime("%d/%m/%Y"), end_date.strftime("%d/%m/%Y"))
 ipca_df["data"] = pd.to_datetime(ipca_df["data"], dayfirst=True)
 ipca_df["valor"] = ipca_df["valor"].astype(float)
 ipca_df = ipca_df.sort_values("data")
@@ -123,30 +133,27 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
 # ======================
-# Anotações fixas (últimos valores, sem bordas)
+# Anotações fixas (sem borda)
 # ======================
 fig.add_annotation(
     x=last_date, y=last_selic,
     text=f"Selic: {last_selic:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white",
-    bordercolor="rgba(0,0,0,0)",  # sem borda
+    bgcolor="white", bordercolor="rgba(0,0,0,0)",
     font=dict(color=COLOR_SELIC)
 )
 fig.add_annotation(
     x=last_date, y=last_ipca,
     text=f"IPCA 12m: {last_ipca:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white",
-    bordercolor="rgba(0,0,0,0)",
+    bgcolor="white", bordercolor="rgba(0,0,0,0)",
     font=dict(color=COLOR_IPCA)
 )
 fig.add_annotation(
     x=last_date, y=last_juros,
     text=f"Juros Reais: {last_juros:.2f}%",
     showarrow=True, arrowhead=1, ax=40, ay=-30,
-    bgcolor="white",
-    bordercolor="rgba(0,0,0,0)",
+    bgcolor="white", bordercolor="rgba(0,0,0,0)",
     font=dict(color=COLOR_JUROS)
 )
 
