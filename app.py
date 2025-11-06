@@ -4,6 +4,8 @@ from datetime import datetime
 import plotly.graph_objects as go
 import streamlit as st
 import base64
+from bs4 import BeautifulSoup
+import re
 
 # ======================
 # Configuração da página
@@ -23,6 +25,42 @@ def get_bcb_data(codigo_serie, start, end):
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     return pd.DataFrame(r.json())
+
+# ======================
+# Função para extrair calendário do Copom
+# ======================
+@st.cache_data
+def get_copom_calendar():
+    url = "https://www.bcb.gov.br/publicacoes/atascopom/cronologicos"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    textos = [t.get_text(strip=True) for t in soup.find_all(["p", "div"]) if "ª Reunião" in t.get_text()]
+
+    padrao = re.compile(r"(\d+)ª Reunião.*?(\d{1,2})\s*e\s*(\d{1,2})\s*de\s*([a-zç]+)\s*de\s*(\d{4})", re.IGNORECASE)
+    meses = {
+        "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4, "maio": 5, "junho": 6,
+        "julho": 7, "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12
+    }
+
+    dados = []
+    for t in textos:
+        match = padrao.search(t)
+        if match:
+            n_reuniao = int(match.group(1))
+            dia1, dia2 = int(match.group(2)), int(match.group(3))
+            mes = meses[match.group(4).lower()]
+            ano = int(match.group(5))
+            dados.append({
+                "reuniao": n_reuniao,
+                "inicio": pd.Timestamp(year=ano, month=mes, day=dia1),
+                "fim": pd.Timestamp(year=ano, month=mes, day=dia2)
+            })
+
+    df = pd.DataFrame(dados).sort_values("fim", ascending=True).reset_index(drop=True)
+    return df
 
 # ======================
 # Cores
@@ -87,6 +125,11 @@ df["juros_reais"] = df["selic"] - df["ipca_12m"]
 last_date = df["data"].max()
 
 # ======================
+# Buscar calendário do Copom
+# ======================
+copom_df = get_copom_calendar()
+
+# ======================
 # Gráfico
 # ======================
 fig = go.Figure()
@@ -118,6 +161,17 @@ fig.add_trace(go.Scatter(x=df["data"], y=df["juros_reais"], mode="lines", name="
 
 fig.add_hline(y=0, line_dash="dot", line_color=COLOR_ZERO)
 
+# Linhas verticais para decisões do Copom
+for _, row in copom_df.iterrows():
+    fig.add_vline(
+        x=row["fim"],
+        line=dict(color="gray", dash="dot", width=1),
+        opacity=0.4,
+        annotation_text=f"Reunião {row['reuniao']}",
+        annotation_position="top left",
+        annotation_font_size=10
+    )
+
 # Layout
 fig.update_layout(
     title=dict(
@@ -145,3 +199,6 @@ fig.update_layout(
 # ======================
 st.plotly_chart(fig, use_container_width=True)
 st.caption(f"Dados atualizados até {last_date.strftime('%d/%m/%Y')}")
+
+st.subheader("📅 Próximas reuniões do Copom")
+st.dataframe(copom_df[copom_df["fim"] >= datetime.today()].reset_index(drop=True))
