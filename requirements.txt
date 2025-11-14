@@ -3,3 +3,4 @@ requests
 plotly
 streamlit
 beautifulsoup4
+plotly
