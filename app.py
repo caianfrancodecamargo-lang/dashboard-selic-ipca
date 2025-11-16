@@ -177,7 +177,7 @@ st.markdown("""
     }
 
     [data-testid="stSidebar"] .stAlert [data-testid="stMarkdownContainer"] {
-        color: #1a5f3f !important;
+        color: #000000 !important;
         font-weight: 600 !important;
     }
 
@@ -284,6 +284,17 @@ st.markdown("""
 
     ::-webkit-scrollbar-thumb:hover {
         background: #1a5f3f;
+    }
+
+    /* Estilo para os checkboxes */
+    [data-testid="stSidebar"] .stCheckbox {
+        margin-bottom: 0.5rem !important;
+    }
+
+    [data-testid="stSidebar"] .stCheckbox label {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -653,7 +664,7 @@ with col2_sidebar:
         key="data_final"
     )
 
-# Opções de indicadores
+# Opções de indicadores (ADICIONADO AQUI!)
 st.sidebar.markdown("#### 📈 Indicadores de Comparação")
 mostrar_cdi = st.sidebar.checkbox("Comparar com CDI", value=True)
 mostrar_selic = st.sidebar.checkbox("Comparar com Selic", value=False)
@@ -754,7 +765,7 @@ if not st.session_state.dados_carregados:
     1. **CNPJ do Fundo**: Digite o CNPJ do fundo que deseja analisar
     2. **Data Inicial**: Digite a data inicial no formato DD/MM/AAAA
     3. **Data Final**: Digite a data final no formato DD/MM/AAAA
-    4. **Indicadores**: Selecione os indicadores para comparação
+    4. **Indicadores**: Selecione os indicadores para comparação (CDI/Selic)
     5. Clique em **Carregar Dados** para visualizar as análises
 
     ---
